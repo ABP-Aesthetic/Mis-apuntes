@@ -479,29 +479,8 @@
     let currentRole = null; // 'admin' o 'guest'
     let notes = [];
 
-    // Cargar datos guardados previamente si existen
-    window.onload = function() {
-      const savedNotes = localStorage.getItem('my_notes_data');
-      if (savedNotes) {
-        notes = JSON.parse(savedNotes);
-      } else {
-        // Ejemplo inicial si está vacío
-        notes = [
-          {
-            id: 1,
-            course: "2º Bachillerato",
-            subject: "Historia",
-            title: "Resumen Tema 1: Prehistoria",
-            date: new Date().toLocaleDateString('es-ES'),
-            fileData: null,
-            fileType: "none"
-          }
-        ];
-      }
-    };
-
     function checkPassword() {
-      const input = document.getElementById('pass-input').value;
+      const input = document.getElementById('pass-input').value.trim();
       const errorMsg = document.getElementById('login-error');
 
       if (input === ADMIN_PASS) {
@@ -530,7 +509,15 @@
         uploadBtn.style.display = "none";
       }
 
-      renderNotes(notes);
+      // Cargar apuntes desde localStorage
+      const savedNotes = localStorage.getItem('my_notes_data');
+      if (savedNotes) {
+        notes = JSON.parse(savedNotes);
+      } else {
+        notes = [];
+      }
+
+      filterNotes();
     }
 
     function logout() {
