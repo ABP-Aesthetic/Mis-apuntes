@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Tablón de Apuntes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #f7f5f0;
+      --card-bg: #ffffff;
+      --text-main: #2c2a29;
+      --text-muted: #706c68;
+      --accent-sage: #8a9a86;
+      --accent-soft: #e2e8e0;
+      --accent-sand: #d8cdb8;
+      --border-color: #e5e0d8;
+      --danger: #b35a5a;
+      --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.04);
+      --font-title: 'Playfair Display', serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* --- LOGIN OVERLAY --- */
+    #login-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: var(--bg-color);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .login-box {
+      background: var(--card-bg);
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--border-color);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .login-box h1 {
+      font-family: var(--font-title);
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .login-box p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    .input-group {
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .input-group input, .input-group select, .input-group textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-group input:focus, .input-group select:focus {
+      border-color: var(--accent-sage);
+    }
+
+    .btn {
+      background-color: var(--accent-sage);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-weight: 500;
+      font-size: 14px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      width: 100%;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+    }
+
+    .btn-secondary {
+      background-color: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-danger {
+      background-color: var(--danger);
+      color: white;
+    }
+
+    .login-error {
+      color: var(--danger);
+      font-size: 13px;
+      margin-top: 12px;
+      display: none;
+    }
+
+    /* --- APP CONTAINER --- */
+    #app {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 30px 40px;
+      background-color: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .header-titles h1 {
+      font-family: var(--font-title);
+      font-size: 32px;
+      font-weight: 500;
+    }
+
+    .header-titles p {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-badge {
+      font-size: 12px;
+      padding: 6px 12px;
+      background-color: var(--accent-soft);
+      border-radius: 20px;
+      color: var(--text-main);
+    }
+
+    /* --- BUSCADOR --- */
+    .search-section {
+      padding: 24px 40px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .search-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* --- PINBOARD (ESTILO PINTEREST) --- */
+    main {
+      padding: 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+      flex: 1;
+    }
+
+    .pinboard {
+      columns: 4 260px;
+      column-gap: 24px;
+    }
+
+    .pin-card {
+      break-inside: avoid;
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-soft);
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .pin-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    }
+
+    .pin-tag {
+      display: inline-block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 4px 8px;
+      background-color: var(--accent-soft);
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+
+    .pin-title {
+      font-family: var(--font-title);
+      font-size: 18px;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .pin-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .pin-preview-box {
+      width: 100%;
+      height: 140px;
+      background-color: var(--bg-color);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+
+    .pin-preview-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .pin-preview-box .file-icon {
+      font-size: 32px;
+      color: var(--text-muted);
+    }
+
+    .pin-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 12px;
+      border-top: 1px solid var(--border-color);
+      padding-top: 12px;
+    }
+
+    .pin-btn {
+      background: none;
+      border: none;
+      font-size: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .pin-btn:hover {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+    }
+
+    /* --- MODALES --- */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(44, 42, 41, 0.4);
+      backdrop-filter: blur(4px);
+      z-index: 500;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background-color: var(--card-bg);
+      border-radius: 16px;
+      padding: 32px;
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      border: 1px solid var(--border-color);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .modal-header h2 {
+      font-family: var(--font-title);
+      font-size: 24px;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .viewer-media {
+      width: 100%;
+      max-height: 60vh;
+      object-fit: contain;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state h3 {
+      font-family: var(--font-title);
+      font-size: 20px;
+      margin-bottom: 8px;
+      color: var(--text-main);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PANTALLA DE ACCESO (CONTRASEÑA) -->
+  <div id="login-overlay">
+    <div class="login-box">
+      <h1>Apuntes Rincón</h1>
+      <p>Introduce la clave de acceso para continuar</p>
+      <div class="input-group">
+        <label for="pass-input">Contraseña</label>
+        <input type="password" id="pass-input" placeholder="••••••••" onkeyup="if(event.key==='Enter') checkPassword()">
+      </div>
+      <button class="btn" onclick="checkPassword()">Entrar</button>
+      <div id="login-error" class="login-error">Contraseña incorrecta</div>
+    </div>
+  </div>
+
+  <!-- APLICACIÓN PRINCIPAL -->
+  <div id="app">
+    <header>
+      <div class="header-titles">
+        <h1>Apuntes y Recursos</h1>
+        <p>Tu archivo personal de estudio</p>
+      </div>
+      <div class="header-actions">
+        <span id="role-badge" class="user-badge">Invitado</span>
+        <button id="upload-btn" class="btn" style="width: auto; display: none;" onclick="openUploadModal()">+ Subir Apunte</button>
+        <button class="btn btn-secondary" style="width: auto;" onclick="logout()">Salir</button>
+      </div>
+    </header>
+
+    <!-- BUSCADOR CON 3 FILTROS -->
+    <section class="search-section">
+      <div class="search-grid">
+        <div class="input-group" style="margin: 0;">
+          <label>Título</label>
+          <input type="text" id="search-title" placeholder="Buscar por título..." oninput="filterNotes()">
+        </div>
+        <div class="input-group" style="margin: 0;">
+          <label>Asignatura</label>
+          <input type="text" id="search-subject" placeholder="Ej: Historia, Mates..." oninput="filterNotes()">
+        </div>
+        <div class="input-group" style="margin: 0;">
+          <label>Curso</label>
+          <input type="text" id="search-course" placeholder="Ej: 2º Bach, 1º Grado..." oninput="filterNotes()">
+        </div>
+      </div>
+    </section>
+
+    <!-- TABLÓN ESTILO PINTEREST -->
+    <main>
+      <div id="pinboard" class="pinboard"></div>
+      <div id="empty-msg" class="empty-state" style="display: none;">
+        <h3>No se encontraron apuntes</h3>
+        <p>Prueba a cambiar la búsqueda o sube uno nuevo.</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL: SUBIR / EDITAR APUNTE -->
+  <div id="upload-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-form-title">Subir Nuevo Apunte</h2>
+        <button class="close-btn" onclick="closeModal('upload-modal')">&times;</button>
+      </div>
+      <form id="note-form" onsubmit="saveNote(event)">
+        <input type="hidden" id="edit-id">
+        <div class="input-group">
+          <label>Curso *</label>
+          <input type="text" id="form-course" required placeholder="Ej: 2º Bachillerato">
+        </div>
+        <div class="input-group">
+          <label>Asignatura *</label>
+          <input type="text" id="form-subject" required placeholder="Ej: Historia de España">
+        </div>
+        <div class="input-group">
+          <label>Título del apunte *</label>
+          <input type="text" id="form-title" required placeholder="Ej: Resumen Tema 3 - La Guerra Civil">
+        </div>
+        <div class="input-group">
+          <label>Archivo (PDF, Imagen, Audio, Vídeo, HTML...)</label>
+          <input type="file" id="form-file" accept="image/*,video/*,audio/*,.pdf,.html">
+        </div>
+        <button type="submit" class="btn">Guardar Apunte</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: VISUALIZADOR Y DESCARGA -->
+  <div id="viewer-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="view-title">Detalle del Apunte</h2>
+        <button class="close-btn" onclick="closeModal('viewer-modal')">&times;</button>
+      </div>
+      <div id="view-body"></div>
+      <div style="margin-top: 20px; display: flex; gap: 10px;">
+        <a id="view-download-btn" class="btn" download style="text-align: center; text-decoration: none;">Descargar Archivo</a>
+        <button class="btn btn-secondary" onclick="closeModal('viewer-modal')">CerrAR</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // CONFIGURACIÓN DE CONTRASEÑAS (PUEDES CAMBIARLAS AQUÍ)
+    const ADMIN_PASS = "admin123";  // Permite subir, editar y eliminar
+    const GUEST_PASS = "amigos123"; // Solo permite ver y descargar
+
+    let currentRole = null; // 'admin' o 'guest'
+    let notes = [];
+
+    // Cargar datos guardados previamente si existen
+    window.onload = function() {
+      const savedNotes = localStorage.getItem('my_notes_data');
+      if (savedNotes) {
+        notes = JSON.parse(savedNotes);
+      } else {
+        // Ejemplo inicial si está vacío
+        notes = [
+          {
+            id: 1,
+            course: "2º Bachillerato",
+            subject: "Historia",
+            title: "Resumen Tema 1: Prehistoria",
+            date: new Date().toLocaleDateString('es-ES'),
+            fileData: null,
+            fileType: "none"
+          }
+        ];
+      }
+    };
+
+    function checkPassword() {
+      const input = document.getElementById('pass-input').value;
+      const errorMsg = document.getElementById('login-error');
+
+      if (input === ADMIN_PASS) {
+        currentRole = 'admin';
+        initApp();
+      } else if (input === GUEST_PASS) {
+        currentRole = 'guest';
+        initApp();
+      } else {
+        errorMsg.style.display = 'block';
+      }
+    }
+
+    function initApp() {
+      document.getElementById('login-overlay').style.display = 'none';
+      document.getElementById('app').style.display = 'flex';
+
+      const badge = document.getElementById('role-badge');
+      const uploadBtn = document.getElementById('upload-btn');
+
+      if (currentRole === 'admin') {
+        badge.innerText = "Modo Edición (Tú)";
+        uploadBtn.style.display = "block";
+      } else {
+        badge.innerText = "Solo Lectura (Amigo)";
+        uploadBtn.style.display = "none";
+      }
+
+      renderNotes(notes);
+    }
+
+    function logout() {
+      currentRole = null;
+      document.getElementById('pass-input').value = '';
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('login-overlay').style.display = 'flex';
+      document.getElementById('login-error').style.display = 'none';
+    }
+
+    function renderNotes(notesToRender) {
+      const pinboard = document.getElementById('pinboard');
+      const emptyMsg = document.getElementById('empty-msg');
+      pinboard.innerHTML = '';
+
+      if (notesToRender.length === 0) {
+        emptyMsg.style.display = 'block';
+        return;
+      } else {
+        emptyMsg.style.display = 'none';
+      }
+
+      // Ordenar de más nuevo a más antiguo
+      const sorted = [...notesToRender].reverse();
+
+      sorted.forEach(note => {
+        const card = document.createElement('div');
+        card.className = 'pin-card';
+        card.onclick = () => openViewer(note.id);
+
+        let previewHTML = '';
+        if (note.fileData) {
+          if (note.fileType.startsWith('image/')) {
+            previewHTML = `<div class="pin-preview-box"><img src="${note.fileData}" alt="preview"></div>`;
+          } else {
+            previewHTML = `<div class="pin-preview-box"><span class="file-icon">📄</span></div>`;
+          }
+        }
+
+        let adminActions = '';
+        if (currentRole === 'admin') {
+          adminActions = `
+            <div class="pin-actions" onclick="event.stopPropagation()">
+              <button class="pin-btn" onclick="editNote(${note.id})">Editar</button>
+              <button class="pin-btn" style="color: var(--danger);" onclick="deleteNote(${note.id})">Eliminar</button>
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <span class="pin-tag">${escapeHtml(note.course)} • ${escapeHtml(note.subject)}</span>
+          <h3 class="pin-title">${escapeHtml(note.title)}</h3>
+          <div class="pin-meta">Subido el ${note.date}</div>
+          ${previewHTML}
+          ${adminActions}
+        `;
+
+        pinboard.appendChild(card);
+      });
+    }
+
+    function filterNotes() {
+      const t = document.getElementById('search-title').value.toLowerCase();
+      const s = document.getElementById('search-subject').value.toLowerCase();
+      const c = document.getElementById('search-course').value.toLowerCase();
+
+      const filtered = notes.filter(n => {
+        const matchTitle = n.title.toLowerCase().includes(t);
+        const matchSubject = n.subject.toLowerCase().includes(s);
+        const matchCourse = n.course.toLowerCase().includes(c);
+        return matchTitle && matchSubject && matchCourse;
+      });
+
+      renderNotes(filtered);
+    }
+
+    function openUploadModal() {
+      document.getElementById('modal-form-title').innerText = "Subir Nuevo Apunte";
+      document.getElementById('edit-id').value = "";
+      document.getElementById('note-form').reset();
+      document.getElementById('upload-modal').style.display = 'flex';
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+
+    function saveNote(e) {
+      e.preventDefault();
+      const id = document.getElementById('edit-id').value;
+      const course = document.getElementById('form-course').value;
+      const subject = document.getElementById('form-subject').value;
+      const title = document.getElementById('form-title').value;
+      const fileInput = document.getElementById('form-file');
+
+      if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          processSaveNote(id, course, subject, title, e.target.result, file.type);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        const existingNote = notes.find(n => n.id == id);
+        const fileData = existingNote ? existingNote.fileData : null;
+        const fileType = existingNote ? existingNote.fileType : "none";
+        processSaveNote(id, course, subject, title, fileData, fileType);
+      }
+    }
+
+    function processSaveNote(id, course, subject, title, fileData, fileType) {
+      if (id) {
+        // Editar
+        const index = notes.findIndex(n => n.id == id);
+        if (index !== -1) {
+          notes[index] = { ...notes[index], course, subject, title, fileData, fileType };
+        }
+      } else {
+        // Crear
+        const newNote = {
+          id: Date.now(),
+          course,
+          subject,
+          title,
+          date: new Date().toLocaleDateString('es-ES'),
+          fileData,
+          fileType
+        };
+        notes.push(newNote);
+      }
+
+      localStorage.setItem('my_notes_data', JSON.stringify(notes));
+      closeModal('upload-modal');
+      filterNotes();
+    }
+
+    function editNote(id) {
+      const note = notes.find(n => n.id === id);
+      if (!note) return;
+
+      document.getElementById('modal-form-title').innerText = "Editar Apunte";
+      document.getElementById('edit-id').value = note.id;
+      document.getElementById('form-course').value = note.course;
+      document.getElementById('form-subject').value = note.subject;
+      document.getElementById('form-title').value = note.title;
+      document.getElementById('upload-modal').style.display = 'flex';
+    }
+
+    function deleteNote(id) {
+      if (confirm("¿Seguro que quieres eliminar este apunte? Esta acción no se puede deshacer.")) {
+        notes = notes.filter(n => n.id !== id);
+        localStorage.setItem('my_notes_data', JSON.stringify(notes));
+        filterNotes();
+      }
+    }
+
+    function openViewer(id) {
+      const note = notes.find(n => n.id === id);
+      if (!note) return;
+
+      document.getElementById('view-title').innerText = note.title;
+      const body = document.getElementById('view-body');
+      const downloadBtn = document.getElementById('view-download-btn');
+
+      let mediaHTML = `<p style="color: var(--text-muted); margin-bottom: 12px;">${note.course} • ${note.subject} (${note.date})</p>`;
+
+      if (note.fileData) {
+        downloadBtn.style.display = "inline-block";
+        downloadBtn.href = note.fileData;
+        downloadBtn.download = note.title;
+
+        if (note.fileType.startsWith('image/')) {
+          mediaHTML += `<img src="${note.fileData}" class="viewer-media" alt="preview">`;
+        } else if (note.fileType.startsWith('video/')) {
+          mediaHTML += `<video src="${note.fileData}" controls class="viewer-media"></video>`;
+        } else if (note.fileType.startsWith('audio/')) {
+          mediaHTML += `<audio src="${note.fileData}" controls style="width: 100%; margin-bottom: 20px;"></audio>`;
+        } else if (note.fileType === 'application/pdf') {
+          mediaHTML += `<iframe src="${note.fileData}" style="width: 100%; height: 400px; border: none; border-radius: 8px;"></iframe>`;
+        } else {
+          mediaHTML += `<div style="padding: 30px; background: var(--bg-color); text-align: center; border-radius: 8px; margin-bottom: 20px;">Archivo disponible para descargar.</div>`;
+        }
+      } else {
+        downloadBtn.style.display = "none";
+        mediaHTML += `<p>Este apunte no contiene un archivo adjunto.</p>`;
+      }
+
+      body.innerHTML = mediaHTML;
+      document.getElementById('viewer-modal').style.display = 'flex';
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
